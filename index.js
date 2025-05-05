@@ -24,7 +24,7 @@ client.connect()
 const mongoStore = MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
     autoRemove: 'interval',
-    autoRemoveInterval: 10, // Removes expired sessions every 10 minutes
+    autoRemoveInterval: 1,
     crypto: {
         secret: process.env.MONGO_SESSION_SECRET,
     }
@@ -37,8 +37,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
     secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
+    resave: true,
+    saveUninitialized: false,
     store: mongoStore,
     cookie: {
         maxAge: expireAge
@@ -54,12 +54,12 @@ app.get("/", (req, res) => {
 });
 
 app.get("/logout", (req, res) => {
+    req.session.cookie.expires = new Date(Date.now() - 1);
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).send("<h1>Error logging out</h1><br><a href='/'>Go back</a>");
         }
-        res.clearCookie("connect.sid");
-        req.session.destroy();
+        
         res.status(200).redirect("/");
     });
 });
@@ -85,10 +85,12 @@ app.post("/loginUser", (req, res) => {
             }
             bcrypt.compare(password, user.password, (err, result) => {
                 if (err) {
-                    return res.status(500).send("<h1>Passwords don't match</h1><br><a href='/login'>Try again</a>");
+                    return res.status(500).send(`<h1>${err.error.details[0].message}</h1> <br><a href='/login'>Try again</a>`);
                 }
                 if (result) {
                     req.session.user = user;
+                    req.session.cookie.maxAge = expireAge;
+                    req.session.cookie.expires = new Date(Date.now() + expireAge);
                     return res.status(200).redirect("/");
                 } else {
                     return res.status(400).send("<h1>Invalid email/password</h1><br><a href='/login'>Try again</a>");
