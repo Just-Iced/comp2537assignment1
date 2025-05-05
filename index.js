@@ -124,7 +124,7 @@ app.post("/registerUser", (req, res) => {
     };
     users.insertOne(newUser).then(() => {
         req.session.user = newUser;
-        res.status(200).redirect("/");
+        res.status(200).redirect("/members");
     });
     
 });
