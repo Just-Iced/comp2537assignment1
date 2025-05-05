@@ -89,7 +89,7 @@ app.post("/loginUser", (req, res) => {
                     req.session.user = user;
                     return res.status(200).redirect("/");
                 } else {
-                    return res.status(400).send("Invalid email/password<br><a href='/login'>Try again</a>");
+                    return res.status(400).send("<h1>Invalid email/password</h1><br><a href='/login'>Try again</a>");
                 }
             });
         })
@@ -132,6 +132,15 @@ app.get("/members", (req, res) => {
         res.sendFile(__dirname + "/public/members.html");
     } else {
         res.status(401).redirect("/");
+    }
+});
+
+app.post("/getUserName", (req, res) => {
+    if (req.session.user) {
+        console.log(req.session.user);
+        res.status(200).send({name: req.session.user.name});
+    } else {
+        res.status(401).send("Unauthorized");
     }
 });
 
