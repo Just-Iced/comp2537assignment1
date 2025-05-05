@@ -23,6 +23,8 @@ client.connect()
     });
 const mongoStore = MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
+    autoRemove: 'interval',
+    autoRemoveInterval: 10, // Removes expired sessions every 10 minutes
     crypto: {
         secret: process.env.MONGO_SESSION_SECRET,
     }
